@@ -1,0 +1,248 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hero Rings Preview</title>
+<style>
+  @font-face { font-family: 'Dirtyline'; src: url('../../src/assets/fonts/dirtyline.woff2') format('woff2'); font-display: swap; }
+  @font-face { font-family: 'Chillax'; src: url('../../src/assets/fonts/chillax-variable.woff2') format('woff2'); font-weight: 200 700; font-display: swap; }
+
+  :root { --canvas: #ffffff; --ink: #000000; --muted: #666666; --line: #c5c5c5; }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { background: var(--canvas); color: var(--ink); font-family: 'Chillax', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  body { overflow-x: hidden; }
+
+  /* ---------- Navbar + hero copy (same as the real site) ---------- */
+  header { position: relative; z-index: 5; display: flex; align-items: center; justify-content: space-between; height: 64px; padding: 0 48px; }
+  .logo { font-family: 'Dirtyline', sans-serif; font-size: 26px; line-height: 1; }
+  nav { display: flex; gap: 36px; color: var(--muted); font-weight: 500; }
+
+  .hero { position: relative; min-height: calc(100svh - 64px); display: flex; align-items: center; padding: 64px 48px; overflow: hidden; }
+  .copy { position: relative; z-index: 4; }
+  .badge { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border: 1px solid var(--line); border-radius: 999px; font: 14px ui-monospace, 'SF Mono', Menlo, monospace; background: #fff; }
+  .badge i { width: 8px; height: 8px; border-radius: 50%; background: #10b981; }
+  h1 { margin-top: 32px; font-family: 'Dirtyline', sans-serif; font-weight: 400; font-size: clamp(4rem, 13vw, 13rem); line-height: .85; }
+  h1 span { display: block; }
+  .role { margin-top: 24px; font-size: 22px; font-weight: 500; }
+
+  /* ---------- Rings (flat 2D) ---------- */
+  .rings { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+  .ring { position: absolute; border-radius: 50%; }
+  .spin { position: absolute; inset: 0; animation: spin var(--speed) linear infinite; animation-direction: var(--dir); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Thin black outlines on the inner and outer edge of each band, like the sketch */
+  .outline { position: absolute; border-radius: 50%; border: 1.5px solid #000; }
+
+  /* One piece of media = a curved slice of the band (clip-path), with a screen inside it */
+  .slice { position: absolute; inset: 0; }
+  .media { position: absolute; overflow: hidden; background: #111; }
+  .media > * { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+
+  /* ---- Placeholder "projects" (swap for real <video>/<img> later) ---- */
+  .tag { position: absolute; inset: var(--tagy) auto auto 50% !important; width: auto !important; height: auto !important; transform: translateX(-50%); padding: 3px 9px; border-radius: 999px; background: rgba(0,0,0,.55); color: #fff; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .tag b { display: inline-block; width: 6px; height: 6px; margin-right: 5px; border-radius: 50%; background: #ef4444; vertical-align: 1px; animation: blink 1.2s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* chat app: messages scrolling up */
+  .chat { background: #eef2ff; }
+  .chat .feed { position: absolute; left: 8%; right: 8%; top: 0; display: flex; flex-direction: column; gap: 8px; animation: up 6s linear infinite; }
+  .chat .feed i { display: block; height: 16px; border-radius: 9px; background: #c7d2fe; width: 60%; }
+  .chat .feed i:nth-child(even) { align-self: flex-end; background: #2563eb; width: 45%; }
+  .code .lines, .chat .feed { height: auto !important; bottom: auto !important; }
+  .code .lines i, .chat .feed i { flex-shrink: 0; }
+  @keyframes up { to { transform: translateY(-50%); } }
+
+  /* dashboard: bars growing */
+  .dash { background: #0b1220; }
+  .dash .bars { position: absolute; left: 14%; right: 14%; top: 12px; height: var(--bandh); display: flex; align-items: flex-end; gap: 6%; }
+  .dash .bars i { flex: 1; background: #38bdf8; border-radius: 3px 3px 0 0; animation: grow 2.4s ease-in-out infinite alternate; }
+  .dash .bars i:nth-child(2n) { background: #a78bfa; animation-delay: -.6s; }
+  .dash .bars i:nth-child(3n) { animation-delay: -1.2s; }
+  @keyframes grow { from { height: 20%; } to { height: 100%; } }
+
+  /* code editor: lines scrolling */
+  .code { background: #1e1e1e; }
+  .code .lines { position: absolute; left: 6%; right: 6%; top: 0; display: flex; flex-direction: column; gap: 7px; animation: up 14s linear infinite; }
+  .code .lines i { display: block; height: 6px; border-radius: 3px; background: #569cd6; }
+  .code .lines i:nth-child(3n) { background: #ce9178; width: 70%; margin-left: 12%; }
+  .code .lines i:nth-child(4n) { background: #6a9955; width: 50%; }
+  .code .lines i:nth-child(5n) { background: #dcdcaa; width: 40%; margin-left: 24%; }
+
+  /* terminal: typing */
+  .term { background: #000; }
+  .term .out { position: absolute; left: 12%; top: 18px; right: 12%; display: flex; flex-direction: column; gap: 7px; }
+  .term .out i { display: block; height: 6px; border-radius: 2px; background: #22c55e; width: 0; animation: type 4s steps(14) infinite; }
+  .term .out i:nth-child(2) { animation-delay: .6s; } .term .out i:nth-child(3) { animation-delay: 1.2s; } .term .out i:nth-child(4) { animation-delay: 1.8s; }
+  @keyframes type { 0% { width: 0; } 40%, 100% { width: 80%; } }
+
+  /* product shop (still image) */
+  .shop { background: #fff7ed; }
+  .shop .grid { position: absolute; left: 6%; right: 6%; top: 10px; height: calc(var(--bandh) - 4px); grid-template-rows: 1fr; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .shop .grid i { border-radius: 6px; background: linear-gradient(160deg, #fdba74, #ea580c); }
+  .shop .grid i:nth-child(2n) { background: linear-gradient(160deg, #fde68a, #f59e0b); }
+
+  /* landing page photo (still image) */
+  .photo { background: linear-gradient(135deg, #0f766e, #14b8a6 45%, #99f6e4); }
+  .photo::after { content: ''; position: absolute; left: 25%; right: 25%; top: calc(var(--bandh) * .2); height: 10px; border-radius: 6px; background: rgba(255,255,255,.85); }
+
+  /* automation flow: dots travelling along a line */
+  .flow { background: #f5f3ff; }
+  .flow .track { position: absolute; left: 10%; right: 10%; top: calc(var(--bandh) / 2); height: 2px; background: #c4b5fd; }
+  .flow .track i { position: absolute; top: -6px; width: 14px; height: 14px; border-radius: 4px; background: #7c3aed; animation: travel 3s linear infinite; }
+  .flow .track i:nth-child(2) { animation-delay: -1s; } .flow .track i:nth-child(3) { animation-delay: -2s; }
+  @keyframes travel { from { left: 0; } to { left: 100%; } }
+
+  /* ollama / LLM: pulsing gradient */
+  .llm { background: radial-gradient(circle at 30% 40%, #f472b6, transparent 45%), radial-gradient(circle at 70% 60%, #60a5fa, transparent 45%), #111827; background-size: 200% 200%; animation: drift 6s ease-in-out infinite alternate; }
+  @keyframes drift { from { background-position: 0% 0%; } to { background-position: 100% 100%; } }
+
+  body.mono .media { filter: grayscale(1) contrast(1.1); }
+  body.paused *, body.paused *::after { animation-play-state: paused !important; }
+
+  /* ---------- Preview controls ---------- */
+  .controls { position: fixed; left: 16px; bottom: 16px; z-index: 10; display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; background: #fff; border: 1px solid #ddd; border-radius: 14px; box-shadow: 0 6px 24px rgba(0,0,0,.08); font-size: 13px; }
+  .controls button { font: inherit; padding: 6px 12px; border-radius: 8px; border: 1px solid #ddd; background: #fff; cursor: pointer; }
+  .controls button[aria-pressed='true'] { background: #000; color: #fff; border-color: #000; }
+
+  @media (max-width: 800px) {
+    header { padding: 0 16px; } nav { display: none; }
+    .hero { padding: 40px 16px; align-items: flex-start; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation-play-state: paused !important; } }
+</style>
+</head>
+<body>
+  <header>
+    <div class="logo">Sushil Yadav</div>
+    <nav><span>About</span><span>Skills</span><span>Projects</span><span>Experience</span><span>Contact</span></nav>
+  </header>
+
+  <section class="hero">
+    <div class="rings" id="rings" aria-hidden="true"></div>
+    <div class="copy">
+      <span class="badge"><i></i>Available for freelance projects</span>
+      <h1><span>Sushil</span><span>Yadav</span></h1>
+      <p class="role">Software Development Engineer</p>
+    </div>
+  </section>
+
+  <div class="controls">
+    <button type="button" id="colour" aria-pressed="true">Colour media</button>
+    <button type="button" id="mono" aria-pressed="false">Black &amp; white media</button>
+    <button type="button" id="pause" aria-pressed="false">Pause</button>
+  </div>
+
+<script>
+  // Placeholder screens. `video: true` ones animate; the rest are stills.
+  // For the real site each entry becomes { src: '/media/x.mp4' } or { src: '/media/x.jpg' }.
+  const screens = [
+    { kind: 'chat',  label: 'Local LLM chat', video: true,  html: '<div class="feed">' + '<i></i>'.repeat(60) + '</div>' },
+    { kind: 'dash',  label: 'Dashboard',      video: true,  html: '<div class="bars">' + '<i></i>'.repeat(7) + '</div>' },
+    { kind: 'shop',  label: 'E-commerce',     video: false, html: '<div class="grid">' + '<i></i>'.repeat(6) + '</div>' },
+    { kind: 'code',  label: 'SAP connector',  video: true,  html: '<div class="lines">' + '<i></i>'.repeat(90) + '</div>' },
+    { kind: 'photo', label: 'Landing page',   video: false, html: '' },
+    { kind: 'term',  label: 'CLI tool',       video: true,  html: '<div class="out">' + '<i></i>'.repeat(4) + '</div>' },
+    { kind: 'flow',  label: 'Automation',     video: true,  html: '<div class="track">' + '<i></i>'.repeat(3) + '</div>' },
+    { kind: 'llm',   label: 'Ollama agent',   video: true,  html: '' },
+  ]
+
+  // Three thick rings placed like the sketch, all running off the right edge.
+  // cx/cy are fractions of the hero; R = outer radius, band = thickness, spans = lengths of each piece in degrees.
+  const rings = [
+    { cx: 0.86, cy: 0.12, R: 380, band: 130, speed: '70s', dir: 'normal',  spans: [62, 34, 80, 28, 50, 44, 40] },
+    { cx: 0.74, cy: 0.58, R: 300, band: 110, speed: '55s', dir: 'reverse', spans: [40, 70, 30, 56, 36, 76, 30] },
+    { cx: 0.98, cy: 0.98, R: 440, band: 150, speed: '85s', dir: 'normal',  spans: [48, 90, 38, 60, 30, 52, 30] },
+  ]
+  const GAP = 3 // degrees of empty space between pieces
+
+  const rad = (d) => (d - 90) * Math.PI / 180 // 0deg = top, clockwise
+  const pt = (c, r, d) => `${(c + r * Math.cos(rad(d))).toFixed(2)} ${(c + r * Math.sin(rad(d))).toFixed(2)}`
+
+  // Curved slice of the band from angle a0 to a1
+  function slicePath(R, r, a0, a1) {
+    const large = a1 - a0 > 180 ? 1 : 0
+    return `M ${pt(R, R, a0)} A ${R} ${R} 0 ${large} 1 ${pt(R, R, a1)} L ${pt(R, r, a1)} A ${r} ${r} 0 ${large} 0 ${pt(R, r, a0)} Z`
+  }
+
+  const host = document.getElementById('rings')
+  let n = 0
+
+  function build() {
+    host.innerHTML = ''
+    const { width: W, height: H } = host.getBoundingClientRect()
+    const scale = Math.min(1, W / 1500) * (W < 800 ? 1.4 : 1)
+
+    rings.forEach((ring) => {
+      const R = ring.R * scale
+      const band = ring.band * scale
+      const r = R - band
+
+      const el = document.createElement('div')
+      el.className = 'ring'
+      Object.assign(el.style, { width: 2 * R + 'px', height: 2 * R + 'px', left: ring.cx * W - R + 'px', top: ring.cy * H - R + 'px' })
+
+      const spin = document.createElement('div')
+      spin.className = 'spin'
+      spin.style.setProperty('--speed', ring.speed)
+      spin.style.setProperty('--dir', ring.dir)
+
+      // Stretch the spans so each ring is exactly full
+      const total = ring.spans.reduce((a, b) => a + b, 0)
+      const k = (360 - GAP * ring.spans.length) / total
+      let a = 0
+      ring.spans.forEach((s) => {
+        const span = s * k
+        const a0 = a, a1 = a + span, mid = a + span / 2
+        a = a1 + GAP
+
+        const slice = document.createElement('div')
+        slice.className = 'slice'
+        slice.style.clipPath = `path('${slicePath(R, r, a0, a1)}')`
+
+        // The screen: an upright rectangle that covers the slice, turned to face outward
+        const half = span / 2 * Math.PI / 180
+        const w = 2 * R * Math.sin(Math.min(half, Math.PI / 2))
+        const h = R - r * Math.cos(Math.min(half, Math.PI / 2)) + (half > Math.PI / 2 ? r : 0)
+        const media = document.createElement('div')
+        const sc = screens[n++ % screens.length]
+        media.className = `media ${sc.kind}`
+        Object.assign(media.style, {
+          width: w + 'px', height: h + 'px', left: R - w / 2 + 'px', top: '0px',
+          transformOrigin: `${w / 2}px ${R}px`, transform: `rotate(${mid}deg)`,
+        })
+        media.style.setProperty('--bandh', band * 0.7 + 'px')
+        media.style.setProperty('--tagy', band * 0.62 + 'px')
+        media.innerHTML = sc.html + `<span class="tag">${sc.video ? '<b></b>' : ''}${sc.label}</span>`
+
+        slice.appendChild(media)
+        spin.appendChild(slice)
+      })
+
+      el.appendChild(spin)
+      for (const d of [0, band]) {
+        const o = document.createElement('div')
+        o.className = 'outline'
+        Object.assign(o.style, { inset: d + 'px' })
+        el.appendChild(o)
+      }
+      host.appendChild(el)
+    })
+  }
+
+  build()
+  let t
+  addEventListener('resize', () => { clearTimeout(t); t = setTimeout(() => { n = 0; build() }, 150) })
+
+  const setPressed = (id, on) => document.getElementById(id).setAttribute('aria-pressed', String(on))
+  document.getElementById('colour').onclick = () => { document.body.classList.remove('mono'); setPressed('colour', true); setPressed('mono', false) }
+  document.getElementById('mono').onclick = () => { document.body.classList.add('mono'); setPressed('colour', false); setPressed('mono', true) }
+  document.getElementById('pause').onclick = (e) => {
+    const paused = document.body.classList.toggle('paused')
+    e.currentTarget.textContent = paused ? 'Play' : 'Pause'
+    setPressed('pause', paused)
+  }
+</script>
+</body>
+</html>

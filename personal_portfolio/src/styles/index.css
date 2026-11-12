@@ -1,0 +1,44 @@
+@import 'tailwindcss';
+
+/* Fonts (self-hosted, licences in src/assets/fonts/) */
+@font-face {
+  font-family: 'Dirtyline';
+  src: url('../assets/fonts/dirtyline.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Chillax';
+  src: url('../assets/fonts/chillax-variable.woff2') format('woff2');
+  font-weight: 200 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Design tokens: each becomes a utility, e.g. font-display, text-ink, bg-paper */
+@theme {
+  --font-display: 'Dirtyline', 'Chillax', system-ui, sans-serif;
+  --font-sans: 'Chillax', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Black and white matched to paulkalkbrenner.net: pure #000 on pure #fff, their #c5c5c5 grey for lines */
+  --color-canvas: #ffffff;
+  --color-ink: #000000;
+  --color-muted: #666666;
+  --color-line: #c5c5c5;
+  --color-paper: #ffffff;
+  --color-accent: #2563eb;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    color-scheme: light;
+  }
+
+  body {
+    @apply bg-canvas font-sans text-ink antialiased;
+  }
+}

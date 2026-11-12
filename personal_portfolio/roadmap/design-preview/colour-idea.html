@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Black, White and Colour</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  /* Black & white carry the page; one blue adds the personality. The script derives every blue token from the chosen hex. */
+  :root {
+    --white: #ffffff;
+    --paper: #fafafa;
+    --grey-1: #f2f2f2;
+    --line: #e5e5e5;
+    --line-strong: #cfcfcf;
+    --muted: #555555;
+    --black: #111111;
+
+    --blue: #00b4d8;        /* the chosen blue, as bright as picked: shapes, buttons, hovers */
+    --on-blue: #111111;     /* text on top of --blue (white or black, whichever reads) */
+    --blue-text: #00718a;   /* darkened until readable on white: links, labels */
+    --blue-deep: #005a6e;   /* link hover */
+    --blue-head: #00718a;   /* big headline word */
+    --blue-soft: #e6f7fb;   /* very light tint */
+
+    --success: #1f9d63;
+
+    /* personality colours: decorative only (shapes, icon tiles, dots), never body text */
+    --p1: var(--blue); --p2: var(--blue); --p3: var(--blue);
+    --p1-soft: var(--blue-soft); --p2-soft: var(--blue-soft); --p3-soft: var(--blue-soft);
+    --p1-ink: var(--blue-text); --p2-ink: var(--blue-text); --p3-ink: var(--blue-text);
+    --on-p1: var(--on-blue); --on-p2: var(--on-blue); --on-p3: var(--on-blue);
+
+    --font-display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+    --font-body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+
+    --fox-body: #ef8a3c; --fox-shade: #d06a26; --fox-cream: #fff4e6; --fox-dark: #2e1f18; --fox-inner: #ffcfae;
+    --fox-glint: #ffffff; --fox-blush: #ff8f9f; --fox-tongue: #f2717f;
+    color-scheme: light;
+  }
+
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--white); color: var(--black); font: 16px/1.6 var(--font-body); }
+  a { color: var(--blue-text); text-decoration: none; font-weight: 600; }
+  a:hover { color: var(--blue-deep); text-decoration: underline; text-underline-offset: 3px; }
+  :focus-visible { outline: 3px solid var(--blue-text); outline-offset: 2px; }
+  .in { max-width: 1080px; margin: 0 auto; padding-inline: 20px; }
+
+  /* ---------- blue picker (not part of the site) ---------- */
+  .picker { background: var(--grey-1); border-bottom: 1px solid var(--line); padding-block: 18px; }
+  .picker h2 { margin: 0 0 4px; font: 800 20px var(--font-display); }
+  .picker > .in > p { margin: 0 0 14px; color: var(--muted); font-size: 14px; max-width: 72ch; }
+  .groups { display: grid; gap: 12px; }
+  .group { display: grid; grid-template-columns: 130px minmax(0, 1fr); gap: 8px 12px; align-items: start; }
+  @media (max-width: 640px) { .group { grid-template-columns: minmax(0, 1fr); } }
+  .group h3 { margin: 6px 0 0; font: 500 12px var(--font-mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; font: 600 13px var(--font-body); color: var(--black); background: var(--white); border: 1px solid var(--line-strong); border-radius: 999px; padding: 5px 12px 5px 6px; cursor: pointer; }
+  .chip i { width: 20px; height: 20px; border-radius: 50%; box-shadow: inset 0 0 0 1px #0000001a; }
+  .chip[aria-pressed="true"] { border-color: var(--black); box-shadow: inset 0 0 0 1px var(--black); }
+  .chip small { font: 500 11px var(--font-mono); color: var(--muted); }
+  .chip .star { color: var(--black); font-size: 11px; }
+
+  .now-bar { position: sticky; top: 0; z-index: 5; background: var(--black); color: var(--white); }
+  .now-bar .in { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 16px; padding-block: 8px; }
+  .now-bar .current { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+  .now-bar .current i { width: 18px; height: 18px; border-radius: 50%; background: var(--blue); box-shadow: 0 0 0 2px #ffffff40; }
+  .now-bar .current code { font: 12px var(--font-mono); opacity: .7; }
+  .now-bar .nav-btns { display: flex; gap: 6px; }
+  .now-bar button { font: 600 13px var(--font-body); color: var(--white); background: transparent; border: 1px solid #ffffff4d; border-radius: 8px; padding: 5px 12px; cursor: pointer; }
+  .now-bar button:hover { border-color: var(--white); }
+
+  /* ---------- mock site ---------- */
+  .nav { border-bottom: 1px solid var(--line); }
+  .nav .in { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 68px; }
+  .logo { font: 800 18px var(--font-display); color: var(--black); }
+  .logo b { color: var(--blue); }
+  .links { display: flex; align-items: center; gap: 22px; font-size: 15px; }
+  .links a { color: var(--muted); font-weight: 500; }
+  .links a:hover { color: var(--black); }
+  @media (max-width: 680px) { .links a:not(.btn) { display: none; } }
+
+  .btn { display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 20px; border-radius: 10px; font: 600 15px var(--font-body); border: 1.5px solid transparent; cursor: pointer; text-decoration: none; transition: background .15s, color .15s, border-color .15s, transform .15s; }
+  .btn:hover { text-decoration: none; transform: translateY(-1px); }
+  .btn.primary { background: var(--black); color: var(--white); }
+  .btn.primary:hover { background: var(--blue); color: var(--on-blue); }
+  .btn.ghost { border-color: var(--line-strong); color: var(--black); background: var(--white); }
+  .btn.ghost:hover { border-color: var(--blue-text); color: var(--blue-text); }
+  .btn.blue { background: var(--blue); color: var(--on-blue); }
+  .btn.blue:hover { background: var(--white); color: var(--black); }
+  .btn.sm { height: 36px; padding: 0 14px; font-size: 14px; }
+
+  .hero { padding-block: 64px 72px; }
+  .hero .in { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 36px; align-items: center; }
+  @media (max-width: 760px) { .hero .in { grid-template-columns: minmax(0, 1fr); } }
+  .badge { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; padding: 6px 12px; border-radius: 999px; background: var(--white); border: 1px solid var(--line-strong); }
+  .badge::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+  h1 { margin: 18px 0 14px; font: 800 clamp(42px, 6.6vw, 72px)/1 var(--font-display); letter-spacing: -.035em; text-wrap: balance; }
+  .ink { color: var(--blue-head); }
+  .pitch { margin: 0; font-size: 18px; color: var(--muted); max-width: 46ch; }
+  .pitch mark { background: linear-gradient(transparent 58%, var(--blue-soft) 58%); color: var(--black); padding: 0 2px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+  .stack { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
+  .chip-s { font: 500 13px var(--font-mono); padding: 4px 10px; border-radius: 8px; background: var(--paper); border: 1px solid var(--line); color: var(--muted); }
+
+  .hero-card { position: relative; justify-self: center; width: min(100%, 320px); aspect-ratio: 1; border-radius: 28px; background: var(--black); display: grid; place-items: end center; overflow: hidden; }
+  .grid-bg { position: absolute; inset: 0; background-image: linear-gradient(#ffffff14 1px, transparent 1px), linear-gradient(90deg, #ffffff14 1px, transparent 1px); background-size: 24px 24px; }
+  .hero-card .sun { position: absolute; width: 58%; aspect-ratio: 1; border-radius: 50%; background: var(--blue); top: 12%; left: 21%; }
+  .hero-card .floor { position: absolute; left: 0; right: 0; bottom: 0; height: 22%; background: var(--white); }
+  .hero-card .tag { position: absolute; top: 14px; left: 14px; font: 500 12px var(--font-mono); color: var(--white); background: #ffffff1f; border-radius: 6px; padding: 3px 8px; }
+  .hero-card svg { position: relative; width: 62%; height: auto; margin-bottom: 14%; }
+
+  section { padding-block: 64px; }
+  .grey { background: var(--paper); border-block: 1px solid var(--line); }
+  .head { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px; margin-bottom: 28px; }
+  .eyebrow { margin: 0 0 6px; font: 500 13px var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--blue-text); }
+  h2 { margin: 0; font: 800 clamp(28px, 4vw, 40px)/1.1 var(--font-display); letter-spacing: -.02em; }
+  h2 .dot { color: var(--blue); }
+
+  .projects { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 20px; }
+  .project { background: var(--white); border: 1px solid var(--line); border-radius: 18px; overflow: hidden; display: grid; transition: border-color .15s, box-shadow .15s; }
+  .project:hover { border-color: var(--black); box-shadow: 6px 6px 0 var(--blue); }
+  .shot { height: 170px; position: relative; overflow: hidden; }
+  .shot.dark { background: var(--black); } .shot.soft { background: var(--blue-soft); }
+  .shot .win { position: absolute; left: 22px; right: 22px; top: 26px; bottom: -10px; background: var(--white); border-radius: 10px 10px 0 0; border: 1px solid var(--line); padding: 14px; display: grid; gap: 8px; align-content: start; }
+  .shot .win b { display: block; height: 8px; border-radius: 4px; background: var(--line); }
+  .shot .win b.c { width: 40%; background: var(--blue); }
+  .shot .win b.d { width: 70%; } .shot .win b.e { width: 55%; }
+  .project .body { padding: 20px; display: grid; gap: 10px; }
+  .meta { font: 500 13px var(--font-mono); color: var(--muted); }
+  .project h3 { margin: 0; font: 800 24px var(--font-display); }
+  .project p { margin: 0; color: var(--muted); }
+  .project .row { display: flex; flex-wrap: wrap; gap: 16px; }
+
+  .services { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 16px; }
+  .service { background: var(--white); border-radius: 16px; padding: 22px; display: grid; gap: 10px; align-content: start; border: 1px solid var(--line); transition: border-color .15s; }
+  .service:hover { border-color: var(--blue); }
+  .service:hover .icon { background: var(--blue); color: var(--on-blue); }
+  .icon { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font: 800 17px var(--font-display); background: var(--black); color: var(--white); transition: background .15s, color .15s; }
+  /* each service gets its own colour */
+  .service.c1 .icon { background: var(--blue-soft); color: var(--black); } .service.c1:hover { border-color: var(--blue); } .service.c1:hover .icon { background: var(--blue); color: var(--on-blue); }
+  .service.c2 .icon { background: var(--p1-soft); color: var(--black); } .service.c2:hover { border-color: var(--p1); } .service.c2:hover .icon { background: var(--p1); color: var(--on-p1); }
+  .service.c3 .icon { background: var(--p2-soft); color: var(--black); } .service.c3:hover { border-color: var(--p2); } .service.c3:hover .icon { background: var(--p2); color: var(--on-p2); }
+  .service.c4 .icon { background: var(--p3-soft); color: var(--black); } .service.c4:hover { border-color: var(--p3); } .service.c4:hover .icon { background: var(--p3); color: var(--on-p3); }
+  h2 .dot.d1 { color: var(--p1-ink); } h2 .dot.d2 { color: var(--p2-ink); } h2 .dot.d3 { color: var(--p3-ink); }
+  .shot.soft { background: var(--p1-soft); }
+  .shot.soft .win b.c { background: var(--p1); }
+  .project.alt:hover { box-shadow: 6px 6px 0 var(--p1); }
+  .hero-card .spark { position: absolute; width: 34px; height: 34px; top: 16%; right: 12%; background: var(--p2); clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%); }
+  .hero-card .pill { position: absolute; width: 46px; height: 18px; border-radius: 9px; left: 10%; top: 58%; background: var(--p3); transform: rotate(-18deg); }
+  .hero-card .ring { position: absolute; width: 22px; height: 22px; border-radius: 50%; border: 4px solid var(--p1); left: 14%; top: 22%; }
+  .timeline li.p1::before { background: var(--p1); } .timeline li.p2::before { background: var(--p2); }
+  .band::before { content: ""; position: absolute; width: 90px; height: 90px; border-radius: 50%; background: var(--p1); right: 120px; top: -45px; }
+  .band .squig { position: absolute; left: 46%; bottom: 14px; width: 70px; height: 14px; z-index: 0; }
+  .band .squig path { fill: none; stroke: var(--p2); stroke-width: 4; stroke-linecap: round; }
+  .mode-note { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+  .service h3 { margin: 0; font: 700 19px var(--font-display); }
+  .service p { margin: 0; color: var(--muted); font-size: 15px; }
+
+  .about { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+  @media (max-width: 760px) { .about { grid-template-columns: minmax(0, 1fr); } }
+  .about p { margin: 0 0 12px; color: var(--muted); max-width: 52ch; }
+  .timeline { list-style: none; margin: 0; padding: 0 0 0 20px; display: grid; gap: 18px; border-left: 2px solid var(--black); }
+  .timeline li { position: relative; display: grid; gap: 2px; }
+  .timeline li::before { content: ""; position: absolute; left: -27px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: var(--white); border: 2px solid var(--black); }
+  .timeline li.now::before { background: var(--blue); border-color: var(--black); }
+  .timeline .when { font: 500 13px var(--font-mono); color: var(--muted); }
+  .timeline li.now .when { color: var(--blue-text); }
+  .timeline b { font-size: 16px; }
+  .timeline span { color: var(--muted); font-size: 14px; }
+
+  .band { background: var(--black); color: var(--white); border-radius: 24px; padding: clamp(28px, 5vw, 48px); display: flex; flex-wrap: wrap; gap: 20px; align-items: center; justify-content: space-between; position: relative; overflow: hidden; }
+  .band::after { content: ""; position: absolute; width: 220px; height: 220px; border-radius: 50%; background: var(--blue); right: -70px; bottom: -120px; }
+  .band > * { position: relative; z-index: 1; }
+  .band h2 { color: var(--white); }
+  .band p { margin: 6px 0 0; color: #cfcfcf; }
+  footer { border-top: 1px solid var(--line); padding-block: 24px 36px; color: var(--muted); font-size: 14px; }
+  footer .in { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+
+  .swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+  .sw { background: var(--white); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .sw i { display: block; height: 56px; border-bottom: 1px solid var(--line); }
+  .sw div { padding: 10px 12px; display: grid; gap: 2px; }
+  .sw b { font-size: 14px; }
+  .sw code { font: 12px var(--font-mono); color: var(--muted); }
+  .sw span { font-size: 12px; color: var(--muted); }
+  .hint { margin: 0 0 20px; color: var(--muted); max-width: 70ch; }
+
+  .fx-b { fill: var(--fox-body); } .fx-s { fill: var(--fox-shade); } .fx-c { fill: var(--fox-cream); } .fx-d { fill: var(--fox-dark); }
+  .fx-i { fill: var(--fox-inner); } .fx-w { fill: var(--fox-glint); } .fx-blush { fill: var(--fox-blush); } .fx-tongue { fill: var(--fox-tongue); }
+  .fx-ln { fill: none; stroke: var(--fox-dark); stroke-linecap: round; stroke-linejoin: round; }
+  .lf, .lf-line { display: none; }
+</style>
+</head>
+<body>
+  <div class="picker">
+    <div class="in">
+      <h2>1. Pick your blue</h2>
+      <p>Your main accent: links, buttons on hover, "Developer.", the contact button. ★ marks the fresh, "refreshing" ones. Light blues get black text on buttons and a darker version for links, so everything stays readable.</p>
+      <div class="groups" id="groups"></div>
+      <h2 style="margin-top:22px">2. Pick the personality colours</h2>
+      <p>Extra colours that sit next to the blue. They only appear in small decorative spots: service icons, the full stops after headings, shapes in the hero, the TIMS card, timeline dots and the contact band. Black and white still do all the main work.</p>
+      <div class="group"><h3>Personality</h3><div class="chips" id="modes"></div></div>
+      <p class="mode-note" id="mode-note"></p>
+    </div>
+  </div>
+
+  <div class="now-bar">
+    <div class="in">
+      <span class="current"><i></i><b id="cur-name">Electric cyan</b><code id="cur-hex"></code></span>
+      <span class="nav-btns"><button type="button" id="prev">← Previous</button><button type="button" id="next">Next →</button></span>
+    </div>
+  </div>
+
+  <header class="nav">
+    <div class="in">
+      <span class="logo">sushil<b>.</b>dev</span>
+      <nav class="links"><a href="#work">Work</a><a href="#services">Services</a><a href="#about">About</a><a class="btn primary sm" href="#contact">Hire me</a></nav>
+    </div>
+  </header>
+
+  <div class="hero">
+    <div class="in">
+      <div>
+        <span class="badge">Available for freelance projects</span>
+        <h1>Full Stack <span class="ink">Developer.</span></h1>
+        <p class="pitch">I build full-stack web apps with React, Node.js and PostgreSQL, and add <mark>AI features that keep your data on your own servers</mark>.</p>
+        <div class="actions"><a class="btn primary" href="#contact">Start a project →</a><a class="btn ghost" href="#work">View my work</a></div>
+        <div class="stack"><span class="chip-s">React</span><span class="chip-s">Node.js</span><span class="chip-s">PostgreSQL</span><span class="chip-s">Redis</span><span class="chip-s">Docker</span><span class="chip-s">Local LLMs</span></div>
+      </div>
+      <div class="hero-card" aria-hidden="true">
+        <span class="grid-bg"></span><span class="sun"></span><span class="ring"></span><span class="spark"></span><span class="pill"></span><span class="floor"></span><span class="tag">~/hello</span>
+        <svg viewBox="-40 -112 80 116"><defs><clipPath id="fw-tc"><path d="M -8,-18 C -22,-16 -35,-24 -37,-39 C -39,-53 -31,-63 -21,-61 C -15,-60 -15,-53 -17.5,-48 C -21,-40 -18,-30 -8,-27 Z"/></clipPath><clipPath id="fw-eb"><path d="M -16,-77 Q -18,-94 -13,-103 Q -6,-98 -1,-84 Z"/></clipPath><clipPath id="fw-ef"><path d="M 4,-85 Q 11,-101 18,-105 Q 22,-96 21,-80 Z"/></clipPath></defs><g transform="translate(0 0) scale(1 1) rotate(0 0 -30)"><g transform="translate(-9 -22) scale(1) rotate(10) translate(9 22)"><path class="fx-b" d="M -8,-18 C -22,-16 -35,-24 -37,-39 C -39,-53 -31,-63 -21,-61 C -15,-60 -15,-53 -17.5,-48 C -21,-40 -18,-30 -8,-27 Z"/><circle class="fx-c" cx="-29" cy="-58" r="8.5" clip-path="url(#fw-tc)"/></g><g transform="translate(-4 -36) rotate(10)"><rect class="fx-s" x="-3" y="-2" width="6" height="14" rx="3"/><circle class="fx-d" cx="0" cy="12.5" r="3.3"/></g><g transform="translate(-5 -14) rotate(3) scale(1 1)"><rect class="fx-s" x="-4.25" y="-2" width="8.5" height="12" rx="4.25"/><ellipse class="fx-d" cx="1.5" cy="11" rx="5" ry="3"/></g><g data-p="body"><ellipse class="fx-b" cx="1" cy="-39" rx="7" ry="5"/><ellipse class="fx-b" cx="0" cy="-27" rx="12.5" ry="14"/><ellipse class="fx-c" cx="3" cy="-25" rx="7" ry="9"/></g><g transform="translate(5 -14) rotate(-3) scale(1 1)"><rect class="fx-b" x="-4.25" y="-2" width="8.5" height="12" rx="4.25"/><ellipse class="fx-d" cx="1.5" cy="11" rx="5" ry="3"/></g><g transform="scale(0)"><path class="lf-line" d="M 5,-102 L 6,-52"/><path class="lf" d="M -22,-99 Q -15,-117 5,-119 Q 25,-117 32,-99 Q 20,-103.5 5,-102.5 Q -10,-103.5 -22,-99 Z"/><path class="lf-line" d="M -19,-100 Q 5,-112 29,-100 M 5,-110 L 5,-103"/></g><g transform="translate(0 0) rotate(-7 2 -40)"><g transform="rotate(6 -8 -81)"><path class="fx-s" d="M -16,-77 Q -18,-94 -13,-103 Q -6,-98 -1,-84 Z"/><circle class="fx-d" cx="-13" cy="-102" r="6.5" clip-path="url(#fw-eb)"/></g><g transform="rotate(10 12 -83)"><path class="fx-b" d="M 4,-85 Q 11,-101 18,-105 Q 22,-96 21,-80 Z"/><path class="fx-i" d="M 7.5,-84.5 Q 12,-96 17,-100 Q 19,-93 18.5,-82 Z"/><circle class="fx-d" cx="18" cy="-104" r="6.5" clip-path="url(#fw-ef)"/></g><path class="fx-b" d="M -21,-60 C -22,-76 -10,-86 3,-86 C 16,-86 27,-77 27,-64 C 28,-60 28,-55 26,-52 C 23,-47 15,-44 8,-44 C 2,-43.5 -5,-44.5 -10,-46.5 C -14,-47 -19,-48.5 -24,-51.5 C -21.5,-53 -20.5,-54.5 -20.5,-56 C -23,-57 -25,-58.5 -26.5,-61 C -24.5,-61 -22.5,-60.5 -21,-60 Z"/><path class="fx-c" d="M -12,-52 C -7,-56.5 1,-57 6,-54.5 C 10,-58.5 19,-60 26.5,-57.5 C 28,-55 27.5,-53 26,-52 C 23,-47 15,-44 8,-44 C 2,-43.5 -5,-44.5 -10,-46.5 C -11.5,-48 -12.5,-50 -12,-52 Z"/><g ><ellipse class="fx-blush" cx="-8.5" cy="-54" rx="3.9" ry="2.2" opacity="0.8"/><ellipse class="fx-blush" cx="10.5" cy="-53.5" rx="3.7" ry="2.1" opacity="0.8"/><path class="fx-ln" stroke-width="1.9" d="M -3.3,-61.8 Q 0,-66.8 3.3,-61.8"/><path class="fx-ln" stroke-width="1.9" d="M 8.7,-61.8 Q 12,-66.8 15.3,-61.8"/><path class="fx-ln" stroke-width="1.4" d="M -3,-71.5 Q 0,-73.8 3,-72"/><path class="fx-ln" stroke-width="1.4" d="M 9,-72 Q 12,-74 15.5,-71.8"/><ellipse class="fx-d" cx="21.5" cy="-56" rx="2.6" ry="1.9"/><ellipse class="fx-w" cx="20.6" cy="-56.7" rx="0.8" ry="0.5"/><path class="fx-d" d="M 17.8,-51.8 Q 21.5,-51 25.2,-51.8 Q 24.8,-45.6 21.5,-45.6 Q 18.2,-45.6 17.8,-51.8 Z"/><path class="fx-tongue" d="M 19.3,-47.4 Q 21.5,-49.6 23.7,-47.4 Q 22.8,-45.9 21.5,-45.9 Q 20.2,-45.9 19.3,-47.4 Z"/></g><g ></g></g><g transform="translate(6 -36) rotate(-120) scale(1 1.3)"><rect class="fx-b" x="-3" y="-2" width="6" height="14" rx="3"/><circle class="fx-d" cx="0" cy="12.5" r="3.3"/></g></g></svg>
+      </div>
+    </div>
+  </div>
+
+  <section id="work" class="grey">
+    <div class="in">
+      <div class="head"><div><p class="eyebrow">Selected work</p><h2>Things I've built<span class="dot">.</span></h2></div><a href="#all">All work →</a></div>
+      <div class="projects">
+        <article class="project">
+          <div class="shot dark"><div class="win"><b class="c"></b><b class="d"></b><b class="e"></b><b class="d"></b></div></div>
+          <div class="body"><span class="meta">AI application · 2026</span><h3>NeuroVault</h3><p>Chat with your team's documents. Every answer cites where it came from.</p>
+            <div class="stack" style="margin-top:4px"><span class="chip-s">RAG</span><span class="chip-s">Pinecone</span><span class="chip-s">Express</span><span class="chip-s">PostgreSQL</span></div>
+            <div class="row"><a href="#nv">Read case study →</a><a href="#nv-code">Source code</a></div></div>
+        </article>
+        <article class="project alt">
+          <div class="shot soft"><div class="win"><b class="c"></b><b class="e"></b><b class="d"></b><b class="e"></b></div></div>
+          <div class="body"><span class="meta">Business platform · 2026</span><h3>TIMS</h3><p>Runs a training institute: four user roles, attendance, certificates and payments.</p>
+            <div class="stack" style="margin-top:4px"><span class="chip-s">PostgreSQL</span><span class="chip-s">RBAC</span><span class="chip-s">Razorpay</span></div>
+            <div class="row"><a href="#tims">Read case study →</a><a href="#tims-code">Source code</a></div></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="services">
+    <div class="in">
+      <div class="head"><div><p class="eyebrow">Services</p><h2>What I can build for you<span class="dot d1">.</span></h2></div><a href="#services-page">How I work →</a></div>
+      <div class="services">
+        <div class="service c1"><span class="icon">{}</span><h3>Full-stack web apps</h3><p>From database design to a deployed, documented app.</p></div>
+        <div class="service c2"><span class="icon">AI</span><h3>AI features &amp; local LLMs</h3><p>Document chat and smart search, even fully offline.</p></div>
+        <div class="service c3"><span class="icon">⇄</span><h3>APIs &amp; integrations</h3><p>Payments, SAP and third-party services, connected.</p></div>
+        <div class="service c4"><span class="icon">⚙</span><h3>Automation &amp; extensions</h3><p>Chrome extensions and workflows that save your team hours.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="about" class="grey">
+    <div class="in about">
+      <div><p class="eyebrow">About</p><h2>Hi, I'm Sushil<span class="dot d2">.</span></h2><p style="margin-top:14px">I'm a software developer who likes knowing how things work under the hood: why a system scales, how data flows, where it breaks.</p><p>Right now I build apps powered by local LLMs, and take on freelance projects on the side.</p></div>
+      <ol class="timeline">
+        <li class="now"><span class="when">Jul 2026 – now</span><b>Software Development Engineer, Local LLMs</b><span>Building LLM-powered software</span></li>
+        <li class="p1"><span class="when">Feb – Jul 2026</span><b>MERN Stack Developer · LBM Solutions</b><span>React, Node.js and MongoDB apps</span></li>
+        <li class="p2"><span class="when">MCA</span><b>Chitkara University</b><span>Master of Computer Applications</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="contact">
+    <div class="in">
+      <div class="band"><svg class="squig" viewBox="0 0 70 14" aria-hidden="true"><path d="M2 7 Q 10 0 18 7 T 34 7 T 50 7 T 68 7"/></svg><div><h2>Got an idea? Let's build it.</h2><p>Tell me about your project. I usually reply within 24 hours.</p></div><a class="btn blue" href="#say-hello">Say hello →</a></div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="in">
+      <div class="head"><div><p class="eyebrow">The palette</p><h2>Colours on this page<span class="dot d3">.</span></h2></div></div>
+      <p class="hint">Black, white and greys do almost all the work. The blue is the main accent: "Developer.", links, labels, hover states, the current job and the contact button. The personality colours only decorate: icon tiles, heading full stops, hero shapes, the TIMS card, timeline dots and the contact band. None of them is used for text you need to read.</p>
+      <div class="swatches" id="swatches"></div>
+    </div>
+  </section>
+
+  <footer><div class="in"><span>© 2026 Sushil Yadav</span><span>Colour preview · fonts and layout are placeholders</span></div></footer>
+
+<script>
+  const BLUES = [
+    { group: 'Fresh & bright', items: [
+      ['electric-cyan', 'Electric cyan', '#00b4d8', true],
+      ['aqua', 'Aqua', '#22d3ee', true],
+      ['sky', 'Sky', '#38bdf8', true],
+      ['azure', 'Azure', '#0ea5e9', true],
+      ['turquoise', 'Turquoise', '#14c8c0', true],
+      ['glacier', 'Glacier', '#7dd3fc', true],
+      ['lagoon', 'Lagoon', '#06b6d4', true],
+    ] },
+    { group: 'Soft & dreamy', items: [
+      ['cornflower', 'Cornflower', '#6495ed', false],
+      ['periwinkle', 'Periwinkle', '#7c8cff', false],
+      ['powder', 'Powder blue', '#8ab6e8', false],
+      ['steel', 'Steel blue', '#4682b4', false],
+    ] },
+    { group: 'Classic & vivid', items: [
+      ['cerulean', 'Cerulean', '#1e88c8', false],
+      ['dodger', 'Dodger blue', '#1e90ff', false],
+      ['cobalt', 'Cobalt', '#3b4ef5', false],
+      ['ultramarine', 'Ultramarine', '#3f2bff', false],
+      ['royal', 'Royal blue', '#2563eb', false],
+    ] },
+    { group: 'Deep & rich', items: [
+      ['sapphire', 'Sapphire', '#0f52ba', false],
+      ['denim', 'Denim', '#1560bd', false],
+      ['ocean', 'Ocean teal', '#0e7490', false],
+      ['petrol', 'Petrol', '#005f73', false],
+      ['navy', 'Navy', '#1e3a8a', false],
+    ] },
+  ];
+  const ALL = BLUES.flatMap((g) => g.items);
+
+  const hexToRgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const rgbToHex = (c) => '#' + c.map((v) => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
+  const lum = (h) => { const c = hexToRgb(h).map((v) => v / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+  const mix = (a, b, t) => { const x = hexToRgb(a), y = hexToRgb(b); return rgbToHex(x.map((v, i) => v + (y[i] - v) * t)); };
+  // darken toward black until the colour reaches `target` contrast on white
+  function readableOnWhite(hex, target) {
+    let out = hex;
+    for (let t = 0; ratio(out, '#ffffff') < target && t <= 1; t += 0.02) out = mix(hex, '#000000', t);
+    return out;
+  }
+
+  function apply(id) {
+    const [, name, hex] = ALL.find((b) => b[0] === id) || ALL[0];
+    const s = document.documentElement.style;
+    const text = readableOnWhite(hex, 4.8);
+    s.setProperty('--blue', hex);
+    s.setProperty('--on-blue', ratio('#ffffff', hex) >= 4.5 ? '#ffffff' : '#111111');
+    s.setProperty('--blue-text', text);
+    s.setProperty('--blue-deep', mix(text, '#000000', 0.2));
+    s.setProperty('--blue-head', ratio(hex, '#ffffff') >= 3 ? hex : readableOnWhite(hex, 3.2));
+    s.setProperty('--blue-soft', mix(hex, '#ffffff', 0.88));
+    document.getElementById('cur-name').textContent = name;
+    document.getElementById('cur-hex').textContent = hex;
+    document.querySelectorAll('#groups .chip').forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.id === id)));
+    const cs = getComputedStyle(document.documentElement);
+    const roles = [
+      ['--white', 'White', 'Most of the page'], ['--paper', 'Soft grey', 'Alternate sections'], ['--line', 'Lines', 'Borders'],
+      ['--muted', 'Grey text', 'Secondary text'], ['--black', 'Black', 'Text, main buttons'],
+      ['--blue', name, 'Shapes, buttons, hovers'], ['--blue-text', `${name}, readable`, 'Links and labels'],
+      ['--blue-soft', `${name} tint`, 'Highlights'], ...(mode === 'blue-only' ? [] : [['--p1', 'Personality 1', 'Decoration only'], ['--p2', 'Personality 2', 'Decoration only'], ['--p3', 'Personality 3', 'Decoration only']].filter((r, i) => !(mode === 'duo' && i > 0))), ['--fox-body', 'Fox orange', 'Mascot only'],
+    ];
+    document.getElementById('swatches').innerHTML = roles.map(([v, n, use]) => {
+      const h = cs.getPropertyValue(v).trim();
+      return `<div class="sw"><i style="background:${h}"></i><div><b>${n}</b><code>${h}</code><span>${use}</span></div></div>`;
+    }).join('');
+    current = id;
+    try { localStorage.setItem('accent-blue-v2', id); } catch (_) {}
+  }
+
+  let current = ALL[0][0];
+
+  const MODES = [
+    ['blue-only', 'Blue only', null, 'Just your blue. The calmest, most minimal option.'],
+    ['playful', 'Playful', ['#ffc93c', '#ff7ab6', '#3ddc97'], 'Sunflower, bubblegum and mint. Friendly and fun, like stickers on a laptop.'],
+    ['cool', 'Cool tech', ['#8b5cf6', '#22d3ee', '#a3e635'], 'Violet, aqua and lime. Energetic and techy.'],
+    ['soft', 'Soft pastel', ['#fcd34d', '#c4b5fd', '#86efac'], 'Butter, lilac and mint. Gentle and creative.'],
+    ['duo', 'Blue + yellow', ['#facc15', '#facc15', '#facc15'], 'Just one extra colour. Bold but still very simple.'],
+  ];
+  let mode = 'playful';
+  function applyMode(id) {
+    const m = MODES.find((x) => x[0] === id) || MODES[0];
+    const s = document.documentElement.style;
+    ['1', '2', '3'].forEach((n, i) => {
+      if (!m[2]) { ['', '-soft', '-ink'].forEach((k) => s.removeProperty(`--p${n}${k}`)); s.removeProperty(`--on-p${n}`); return; }
+      const hex = m[2][i];
+      s.setProperty(`--p${n}`, hex);
+      s.setProperty(`--p${n}-soft`, mix(hex, '#ffffff', 0.8));
+      s.setProperty(`--p${n}-ink`, readableOnWhite(hex, 3));
+      s.setProperty(`--on-p${n}`, ratio('#ffffff', hex) >= 4.5 ? '#ffffff' : '#111111');
+    });
+    document.querySelectorAll('#modes .chip').forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.mode === m[0])));
+    document.getElementById('mode-note').textContent = m[3];
+    mode = m[0];
+    try { localStorage.setItem('accent-mode', mode); } catch (_) {}
+    apply(current);
+  }
+  document.getElementById('modes').innerHTML = MODES.map(([id, name, cols]) =>
+    `<button type="button" class="chip" data-mode="${id}" aria-pressed="false">${(cols || []).filter((c, i, a) => a.indexOf(c) === i).map((c) => `<i style="background:${c}"></i>`).join('') || '<i style="background:var(--blue)"></i>'}${name}</button>`).join('');
+  document.getElementById('modes').addEventListener('click', (e) => { const b = e.target.closest('.chip'); if (b) applyMode(b.dataset.mode); });
+  document.getElementById('groups').innerHTML = BLUES.map((g) => `
+    <div class="group"><h3>${g.group}</h3><div class="chips">${g.items.map(([id, name, hex, fresh]) =>
+      `<button type="button" class="chip" data-id="${id}" aria-pressed="false"><i style="background:${hex}"></i>${name}${fresh ? ' <span class="star">★</span>' : ''} <small>${hex}</small></button>`).join('')}</div></div>`).join('');
+  document.getElementById('groups').addEventListener('click', (e) => { const b = e.target.closest('.chip'); if (b) apply(b.dataset.id); });
+  const step = (d) => { const i = ALL.findIndex((b) => b[0] === current); apply(ALL[(i + d + ALL.length) % ALL.length][0]); };
+  document.getElementById('prev').addEventListener('click', () => step(-1));
+  document.getElementById('next').addEventListener('click', () => step(1));
+  let start = ALL[0][0];
+  try { start = localStorage.getItem('accent-blue-v2') || start; } catch (_) {}
+  apply(ALL.some((b) => b[0] === start) ? start : ALL[0][0]);
+  let startMode = 'playful';
+  try { startMode = localStorage.getItem('accent-mode') || startMode; } catch (_) {}
+  applyMode(startMode);
+</script>
+</body>
+</html>
